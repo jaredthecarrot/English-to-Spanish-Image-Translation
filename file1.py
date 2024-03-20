@@ -37,7 +37,5 @@ for line in lines:
     # Tokenizing start and end of sequence
     spa = "[start] " + spa + " [end]"
     pairs.append((eng,spa))
-
-print(pairs)
 # Dataset should be partially tokenized, and made into a list of English
     # and Spanish translations
