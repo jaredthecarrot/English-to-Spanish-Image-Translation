@@ -281,13 +281,15 @@ encoder_inputs = keras.Input(shape=(None,), dtype="int64", name="encoder_inputs"
 x = PositionalEmbedding(seq_len, vocab, embed_dim)(encoder_inputs)
 encoder_outputs = TransformerEncoder(embed_dim, latent_dim, num_heads)(x)
 encoder = keras.Model(encoder_inputs, encoder_outputs)
-decoder_inputs = keras.Input(shape=(None,), dtype="int64",name="encoder_inputs")
+
+decoder_inputs = keras.Input(shape=(None,), dtype="int64",name="decoder_inputs")
 encoded_seq_inputs = keras.Input(shape=(None, embed_dim), name="decoder_state_inputs")
 x = PositionalEmbedding(seq_len, vocab, embed_dim)(decoder_inputs)
 x = TransformerDecoder(embed_dim, latent_dim, num_heads)(x, encoded_seq_inputs)
 x = layers.Dropout(0.5)(x)
 decoder_outputs = layers.Dense(vocab, activation="softmax")(x)
 decoder = keras.Model([decoder_inputs, encoded_seq_inputs], decoder_outputs)
+
 decoder_outputs = decoder([decoder_inputs, encoder_outputs])
 transformer = keras.Model(
     [encoder_inputs, decoder_inputs], decoder_outputs, name="transformer"
@@ -298,7 +300,7 @@ transformer.compile(
     "rmsprop", loss = "sparse_categorical_crossentropy", metrics = ["accuracy"]
 )
 
-transformer.fit(training_dset, epochs = 1, validation_data = validation_dset)
+transformer.fit(training_dset, epochs = 30, validation_data = validation_dset)
 
 spa_vocab = spa_vec.get_vocabulary()
 spa_index_lookup = dict(zip(range(len(spa_vocab)), spa_vocab))
@@ -323,7 +325,9 @@ def decode_sequence(input_sentence):
     return decoded_sentence
 
 
-test_eng_texts = [pair[0] for pair in test_pairs]
-for _ in range(30):
+test_eng_texts = [pair[0] for pair in testing]
+for _ in range(5):
     input_sentence = random.choice(test_eng_texts)
     translated = decode_sequence(input_sentence)
+    print(input_sentence)
+    print(translated)
