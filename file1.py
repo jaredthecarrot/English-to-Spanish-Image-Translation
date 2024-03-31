@@ -132,32 +132,29 @@ class TransformerEncoder(layers.Layer):
         self.layernorm2 = layers.LayerNormalization()
         self.supports_masking =  True
 
-        def call(self, inputs, mask = None):
-            if mask is not None:
-                padmask = ops.cast(mask[:, None, :], dtype = "int32")
-            else:
-                padmask = None
+    def call(self, inputs, mask = None):
+        if mask is not None:
+            padmask = ops.cast(mask[:, None, :], dtype = "int32")
+        else:
+            padmask = None
             
-            attention_output = self.attention(
-                query = inputs,
-                value = inputs,
-                key = inputs,
-                attention_mask = padmask
-            )
-            input_projection = self.layernorm1(inputs + attention_output)
-            output_projection = self.projection(input_projection)
-            return self.layernorm2(input_projection + output_projection)
+        attention_output = self.attention(
+            query = inputs, value = inputs, key = inputs, attention_mask = padmask,
+        )
+        input_projection = self.layernorm1(inputs + attention_output)
+        output_projection = self.projection(input_projection)
+        return self.layernorm2(input_projection + output_projection)
 
-        def get_config(self):
-            config = super().get_config()
-            config.update(
-                {
-                    "embed": self.embed,
-                    "dense": self.dense,
-                    "num_heads": self.num_heads,
-                }
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "embed_dim": self.embed,
+                "dense_dim": self.dense,
+                "num_heads": self.num_heads,
+            }
             )
-            return config
+        return config
 
 # Positional Embedding
 
@@ -284,27 +281,24 @@ encoder_inputs = keras.Input(shape=(None,), dtype="int64", name="encoder_inputs"
 x = PositionalEmbedding(seq_len, vocab, embed_dim)(encoder_inputs)
 encoder_outputs = TransformerEncoder(embed_dim, latent_dim, num_heads)(x)
 encoder = keras.Model(encoder_inputs, encoder_outputs)
-
-decoder_inputs = keras.Input(shape=(None,), dtype="int64", name="decoder_inputs")
+decoder_inputs = keras.Input(shape=(None,), dtype="int64",name="encoder_inputs")
 encoded_seq_inputs = keras.Input(shape=(None, embed_dim), name="decoder_state_inputs")
 x = PositionalEmbedding(seq_len, vocab, embed_dim)(decoder_inputs)
 x = TransformerDecoder(embed_dim, latent_dim, num_heads)(x, encoded_seq_inputs)
 x = layers.Dropout(0.5)(x)
 decoder_outputs = layers.Dense(vocab, activation="softmax")(x)
 decoder = keras.Model([decoder_inputs, encoded_seq_inputs], decoder_outputs)
-
 decoder_outputs = decoder([decoder_inputs, encoder_outputs])
 transformer = keras.Model(
     [encoder_inputs, decoder_inputs], decoder_outputs, name="transformer"
 )
 
-epochs = 1  # This should be at least 30 for convergence
-
 transformer.summary()
 transformer.compile(
-    "rmsprop", loss="sparse_categorical_crossentropy", metrics=["accuracy"]
+    "rmsprop", loss = "sparse_categorical_crossentropy", metrics = ["accuracy"]
 )
-transformer.fit(training, epochs=epochs, validation_data=validation)
+
+transformer.fit(training_dset, epochs = 1, validation_data = validation_dset)
 
 spa_vocab = spa_vec.get_vocabulary()
 spa_index_lookup = dict(zip(range(len(spa_vocab)), spa_vocab))
@@ -318,7 +312,6 @@ def decode_sequence(input_sentence):
         tokenized_target_sentence = spa_vec([decoded_sentence])[:, :-1]
         predictions = transformer([tokenized_input_sentence, tokenized_target_sentence])
 
-        # ops.argmax(predictions[0, i, :]) is not a concrete value for jax here
         sampled_token_index = ops.convert_to_numpy(
             ops.argmax(predictions[0, i, :])
         ).item(0)
