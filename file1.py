@@ -58,6 +58,9 @@ strip_chars = string.punctuation + "¿"
 strip_chars = strip_chars.replace("[", "")
 strip_chars = strip_chars.replace("]", "")
 
+vocab = 15000
+seq_len = 20
+batsize = 64
 def standard(i_string):
     lc = tf_strings.lower(i_string)
     return tf_strings.regex_replace(lc, "[%s]" % re.escape(strip_chars), "")
@@ -107,8 +110,227 @@ validation_dset = create(validation)
 
 # Now our training and validation datasets are complete
 # Our Transformer model will have an encoder, decoder, and positional embedding
- 
+
+import keras.ops as ops
+
 class TransformerEncoder(layers.Layer):
     def __init__(self, embed, dense, num_heads, **kwargs):
         super().__init__(**kwargs)
-        
+        self.embed = embed
+        self.dense = dense
+        self.num_heads = num_heads
+        self.attention = layers.MultiHeadAttention(
+            num_heads = num_heads, key_dim = embed
+        )
+        self.projection = keras.Sequential(
+            [
+                layers.Dense(dense, activation = "relu"),
+                layers.Dense(embed),
+            ]
+        )
+        self.layernorm1 = layers.LayerNormalization()
+        self.layernorm2 = layers.LayerNormalization()
+        self.supports_masking =  True
+
+        def call(self, inputs, mask = None):
+            if mask is not None:
+                padmask = ops.cast(mask[:, None, :], dtype = "int32")
+            else:
+                padmask = None
+            
+            attention_output = self.attention(
+                query = inputs,
+                value = inputs,
+                key = inputs,
+                attention_mask = padmask
+            )
+            input_projection = self.layernorm1(inputs + attention_output)
+            output_projection = self.projection(input_projection)
+            return self.layernorm2(input_projection + output_projection)
+
+        def get_config(self):
+            config = super().get_config()
+            config.update(
+                {
+                    "embed": self.embed,
+                    "dense": self.dense,
+                    "num_heads": self.num_heads,
+                }
+            )
+            return config
+
+# Positional Embedding
+
+class PositionalEmbedding(layers.Layer):
+    def __init__(self, seq_len, vocab, embed, **kwargs):
+        super().__init__(**kwargs)
+        self.token_embeddings = layers.Embedding(
+            input_dim = vocab,
+            output_dim = embed,
+        )
+        self.position_embeddings = layers.Embedding(
+            input_dim = seq_len,
+            output_dim = embed,
+        )
+        self.seq_len = seq_len
+        self.vocab = vocab
+        self.embed = embed
+
+    def call(self, inputs):
+        len = ops.shape(inputs)[-1]
+        positions = ops.arange(0, len, 1)
+        embedtoks = self.token_embeddings(inputs)
+        embedpos = self.position_embeddings(positions)
+        return embedtoks + embedpos
+
+    def comp_mask(self, inputs, mask = None):
+        if mask is None:
+            return None
+        else:
+            return ops.not_equal(inputs, 0)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "seq_len": self.seq_len,
+                "vocab": self.vocab,
+                "embed": self.embed,
+            }
+        )
+        return config
+    
+class TransformerDecoder(layers.Layer):
+    def __init__(self, embed, latent, num_heads, **kwargs):
+        super().__init__(**kwargs)
+        self.embed = embed
+        self.latent = latent
+        self.num_heads = num_heads
+        self.attention1 = layers.MultiHeadAttention(
+            num_heads = num_heads,
+            key_dim = embed,
+        )
+        self.attention2 = layers.MultiHeadAttention(
+            num_heads = num_heads,
+            key_dim = embed
+        )
+        self.projection = keras.Sequential(
+            [
+                layers.Dense(latent, activation = "relu"),
+                layers.Dense(embed),
+            ]
+        )
+        self.layernorm1 = layers.LayerNormalization()
+        self.layernorm2 = layers.LayerNormalization()
+        self.layernorm3 = layers.LayerNormalization()
+        self.supp_mask = True
+
+    def call(self, inputs, encode_out, mask = None):
+        casmask = self.get_cam(inputs)
+        if mask is not None:
+            padmask = ops.cast(mask[:, None, :], dtype = "int32")
+            padmask = ops.minimum(padmask, casmask)
+        else:
+            padmask = None
+
+        attention_output1 = self.attention1(
+            query = inputs,
+            value = inputs,
+            key = inputs,
+            attention_mask = casmask,
+        )
+        out1 = self.layernorm1(inputs + attention_output1)
+
+        attention_output2 = self.attention2(
+            query = out1,
+            value = encode_out,
+            key = encode_out,
+            attention_mask = padmask,
+        )
+        out2 = self.layernorm2(out1 + attention_output2)
+
+        projection = self.projection(out2)
+        return self.layernorm3(out2 + projection)
+
+    def get_cam(self, inputs):
+        input_shape = ops.shape(inputs)
+        batsize, seq_len = input_shape[0], input_shape[1]
+        i = ops.arange(seq_len)[:, None]
+        j = ops.arange(seq_len)
+        mask = ops.cast(i >= j, dtype = "int32")
+        mask = ops.reshape(mask, (1, input_shape[1], input_shape[1]))
+        mult = ops.concatenate(
+            [ops.expand_dims(batsize, -1), ops.convert_to_tensor([1,1])],
+            axis = 0,
+        )
+        return ops.tile(mask, mult)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "embed": self.embed,
+                "latent": self.latent,
+                "num_heads": self.num_heads,
+            }
+        )
+        return config
+
+embed_dim = 256
+latent_dim = 2048
+num_heads = 8
+
+encoder_inputs = keras.Input(shape=(None,), dtype="int64", name="encoder_inputs")
+x = PositionalEmbedding(seq_len, vocab, embed_dim)(encoder_inputs)
+encoder_outputs = TransformerEncoder(embed_dim, latent_dim, num_heads)(x)
+encoder = keras.Model(encoder_inputs, encoder_outputs)
+
+decoder_inputs = keras.Input(shape=(None,), dtype="int64", name="decoder_inputs")
+encoded_seq_inputs = keras.Input(shape=(None, embed_dim), name="decoder_state_inputs")
+x = PositionalEmbedding(seq_len, vocab, embed_dim)(decoder_inputs)
+x = TransformerDecoder(embed_dim, latent_dim, num_heads)(x, encoded_seq_inputs)
+x = layers.Dropout(0.5)(x)
+decoder_outputs = layers.Dense(vocab, activation="softmax")(x)
+decoder = keras.Model([decoder_inputs, encoded_seq_inputs], decoder_outputs)
+
+decoder_outputs = decoder([decoder_inputs, encoder_outputs])
+transformer = keras.Model(
+    [encoder_inputs, decoder_inputs], decoder_outputs, name="transformer"
+)
+
+epochs = 1  # This should be at least 30 for convergence
+
+transformer.summary()
+transformer.compile(
+    "rmsprop", loss="sparse_categorical_crossentropy", metrics=["accuracy"]
+)
+transformer.fit(training, epochs=epochs, validation_data=validation)
+
+spa_vocab = spa_vec.get_vocabulary()
+spa_index_lookup = dict(zip(range(len(spa_vocab)), spa_vocab))
+max_decoded_sentence_length = 20
+
+
+def decode_sequence(input_sentence):
+    tokenized_input_sentence = eng_vec([input_sentence])
+    decoded_sentence = "[start]"
+    for i in range(max_decoded_sentence_length):
+        tokenized_target_sentence = spa_vec([decoded_sentence])[:, :-1]
+        predictions = transformer([tokenized_input_sentence, tokenized_target_sentence])
+
+        # ops.argmax(predictions[0, i, :]) is not a concrete value for jax here
+        sampled_token_index = ops.convert_to_numpy(
+            ops.argmax(predictions[0, i, :])
+        ).item(0)
+        sampled_token = spa_index_lookup[sampled_token_index]
+        decoded_sentence += " " + sampled_token
+
+        if sampled_token == "[end]":
+            break
+    return decoded_sentence
+
+
+test_eng_texts = [pair[0] for pair in test_pairs]
+for _ in range(30):
+    input_sentence = random.choice(test_eng_texts)
+    translated = decode_sequence(input_sentence)
