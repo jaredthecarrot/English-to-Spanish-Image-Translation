@@ -26,13 +26,11 @@ def image_to_text(image_path):
         return None
 
 
-image_path = r'C:\Users\ndela\Downloads\pytesseract-simple-python-optical-character-recognition-7.png'
-
+image_path = r'C:\Users\jared\Projects\image_translation\image_translation\pytesseract-simple-python-optical-character-recognition-7.png'
 
 extracted_text = image_to_text(image_path)
 
 if extracted_text:
-    
     print("Extracted Text:")
     print(extracted_text)
 else:
