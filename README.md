@@ -9,8 +9,11 @@ It uses a combination of Image Processing and Natrual Language Processing to cap
 Python
   
   Version 3.9 or higher
+  
 Hardware Requirements:
+
   NVIDIA GPU with CUDA  
+  
   Windows 10 or higher
   
 ---------------------------------------------------------------------------------------------------------------------------------------------------  
