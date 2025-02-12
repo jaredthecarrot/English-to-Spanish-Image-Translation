@@ -3,12 +3,12 @@ This project is a language translation model from English-to-Spanish.
 It uses a combination of Image Processing and Natrual Language Processing to capture text from photos and translate them into a different language.
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ## Installation
-#Language
-  -Python
-    -Version 3.9 or higher
-#Hardware Requirements
-  -NVIDIA GPU with CUDA
-  -Windows 10 or higher
+-#Language
+  --Python
+    --Version 3.9 or higher
+-#Hardware Requirements
+  --NVIDIA GPU with CUDA
+  --Windows 10 or higher
 ---------------------------------------------------------------------------------------------------------------------------------------------------  
 #Needed Libraries
   -OpenCV
