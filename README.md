@@ -4,13 +4,13 @@ It uses a combination of Image Processing and Natrual Language Processing to cap
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ## Installation
 
-#Language
+##Language
 
-Python
+##Python
   
   Version 3.9 or higher
   
-Hardware Requirements:
+##Hardware Requirements:
 
   NVIDIA GPU with CUDA  
   
