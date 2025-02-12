@@ -1,73 +1,111 @@
+# English-to-Spanish Translation Model
+
+This project is a language translation model that translates text from English to Spanish using a combination of Image Processing and Natural Language Processing. The model captures text from images and translates it into the desired language.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+  - [Language Requirements](#language-requirements)
+  - [Hardware Requirements](#hardware-requirements)
+  - [Needed Libraries](#needed-libraries)
+  - [Programs Needed](#programs-needed)
+  - [Pre-requisites](#pre-requisites)
+- [Steps](#steps)
+- [Notes](#notes)
+- [Known Issues](#known-issues)
+
 ## Overview
-This project is a language translation model from English-to-Spanish. 
-It uses a combination of Image Processing and Natrual Language Processing to capture text from photos and translate them into a different language.
----------------------------------------------------------------------------------------------------------------------------------------------------
+
+This project uses a combination of **Image Processing** and **Natural Language Processing** to extract text from photos and translate it into Spanish. The main components include:
+
+- **Image processing** for extracting text from images using PyTesseract.
+- **Natural Language Processing** to train a model for translation.
+
 ## Installation
 
-##Language
+### Language Requirements
+- Python version 3.9 or higher
 
-##Python
-  
-  Version 3.9 or higher
-  
-##Hardware Requirements:
+### Hardware Requirements:
+- NVIDIA GPU with CUDA support
+- Windows 10 or higher
 
-  NVIDIA GPU with CUDA  
-  
-  Windows 10 or higher
-  
----------------------------------------------------------------------------------------------------------------------------------------------------  
-#Needed Libraries
-  -OpenCV
-  -PyTesseract
-  -Numpy
-  -tensorflow
-  -keras
-  
-OpenCV, PyTesseract, and Tensorflow will need additional downloaded content. Links attached below.
+### Needed Libraries:
+- **OpenCV**
+- **PyTesseract**
+- **Numpy**
+- **TensorFlow**
+- **Keras**
 
-#Programs Needed
-OpenCV: https://opencv.org/releases/
-PyTesseract: https://github.com/h/pytesseract
-Tensorflow: https://www.tensorflow.org/install
+**Note:** OpenCV, PyTesseract, and TensorFlow will require additional setup, and links for downloading will be provided below.
 
-##Pre-requisties
--Check 'pip' for updates using command -pip install --upgrade pip
-#OpenCV
--Download and Install OpenCV
--Ensure Pathing is established in system (May need system restart)
--Check version of opencv-python
--use command -pip install opencv-python in python terminal
--use command -import opencv-python as cv2
-#PyTesseract
--Download and Extract PyTesseract files
--Ensure Pathing is established in system (May need system restart)
--Check version of Pytesseract
--use command -pip install pytesseract in python terminal
--use command import pytesseract
-#Tensorflow
--Ensure hardware and software requirements
--use -pip install tensorflow in python terminal
--use command import tensorflow
-#Numpy
--use command -pip install numpy
--import numpy
-#keras
--use command -pip install keras
--import keras
+### Programs Needed:
 
-##Steps
--Clone reposititory for transformer.ipynd 
-  -Repositories for Pytesseract1 uses files saved from computer (Will need manual input in code to use)
-  -Repository for Pytesseract2 uses image urls
-  -Reposititory for Pytesseract3 uses camera connected to system for image capture (Experimental and not fully functional)
+- **OpenCV:** [Installation link](https://opencv.org/releases/)
+- **PyTesseract:** [Installation link](https://github.com/h/pytesseract)
+- **TensorFlow:** [Installation link](https://www.tensorflow.org/install)
 
-## NOTES
--Current program for transformer model includes language training and translation of select target sentences
--Program was created in a very small time frame
-#Known Issues
--Pytesseract models will require file pathing, ensure pytesseract files are installed and correctly pathed
--Translation model unable to save keras model for future translations, current model requires retraining for experiments (~8 hours)
--Camera capture function may not repsond correctly or capture connected camera
--Expect some delay between image processing and text extraction
--Handwritten text highly likely to not be recognized by image extraction program
+### Pre-requisites:
+- Update `pip` using the following command:
+  ```bash
+  pip install --upgrade pip
+
+## Notes
+- Expect some delay between image processing and text extraction.
+- Handwritten text is highly likely to not be recognized by the image extraction program.
+
+## Installation Instructions
+
+### OpenCV:
+1. Download and install OpenCV from [here](https://opencv.org/releases/).
+2. Ensure that the pathing is correctly set in your system (a restart may be required).
+3. Install OpenCV via pip:
+   ```bash
+   pip install opencv-python
+4. Verify the installation
+   '''bash
+   import cv2
+
+### PyTesseract:
+1. Download and extract PyTesseract from [GitHub](https://github.com/h/pytesseract).
+2. Ensure that the pathing is correctly set in your system (a restart may be required).
+3. Install PyTesseract via pip:
+   ```bash
+   pip install pytesseract
+4. Verify the installation
+   '''bash
+   import pytesseract
+
+### TensorFlow:
+1. Ensure that your hardware and software meet TensorFlow's requirements.
+2. Install TensorFlow via pip:
+   ```bash
+   pip install tensorflow
+3. Verift the installation
+   '''bash
+   import tensorflow
+
+### Numpy:
+1. Install Numpy via pip:
+   ```bash
+   pip install numpy
+   
+### Keras:
+1. Install Keras via pip:
+   ```bash
+   pip install keras
+
+## Steps
+  Clone the repository for the translation model:
+   ```bash
+git clone https://github.com/yourusername/your-repository.git
+cd your-repository
+The project includes three repositories for different image input methods:
+- **Pytesseract1 Repository**: Uses files saved on the computer (manual input required in the code).
+- **Pytesseract2 Repository**: Uses image URLs for text extraction.
+- **Pytesseract3 Repository**: Uses a connected camera for image capture (this is experimental and may not work correctly).
+
+Once you have cloned the repository, open `transformer.ipynb` to start using the model.
+
+
