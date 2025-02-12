@@ -11,9 +11,9 @@ This project is a language translation model that translates text from English t
   - [Needed Libraries](#needed-libraries)
   - [Programs Needed](#programs-needed)
   - [Pre-requisites](#pre-requisites)
-- [Steps](#steps)
 - [Notes](#notes)
 - [Known Issues](#known-issues)
+- [Steps](#steps)
 
 ## Overview
 
@@ -95,6 +95,12 @@ This project uses a combination of **Image Processing** and **Natural Language P
 1. Install Keras via pip:
    ```bash
    pip install keras
+
+### Known Issues:
+- **PyTesseract** requires proper pathing. Ensure the PyTesseract files are correctly installed and pathed.
+- The translation model cannot currently save the trained Keras model for future translations. It needs to be retrained (~8 hours) for experiments.
+- The camera capture functionality may not respond correctly or capture from the connected camera.
+
 
 ## Steps
   Clone the repository for the translation model:
