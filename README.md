@@ -26,6 +26,7 @@ This project uses a combination of **Image Processing** and **Natural Language P
 
 ### Language Requirements
 - Python version 3.9 or higher
+- Juypter Notebook
 
 ### Hardware Requirements:
 - NVIDIA GPU with CUDA support
