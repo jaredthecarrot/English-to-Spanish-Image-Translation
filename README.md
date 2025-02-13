@@ -117,26 +117,26 @@ The project includes three repositories for different image input methods:
 
 Once you have cloned the repository, open `transformer.ipynb` to start using the model.
 
-## Examples
-# PRINTED TEST
+# Examples
+## PRINTED TEST
 ### Input
 ![testocr](https://github.com/user-attachments/assets/ede32670-8531-48d4-9c28-e7a19bf0bdb8)
 ### Output
 <img width="858" alt="image" src="https://github.com/user-attachments/assets/0d6c2ba6-4390-4433-9ccb-2bfa31a06429" />
 
-# HAND WRITTEN TEXT
+## HAND WRITTEN TEXT
 ### Input
 ![image](https://github.com/user-attachments/assets/6a696b6d-9ae7-45f5-800f-1af2475fbfa2)
 ### OutPut
 <img width="859" alt="image" src="https://github.com/user-attachments/assets/90d69a72-f2ab-41b8-b953-fcbc60a29256" />
 
-# LOW QUALITY IMAGE
+## LOW QUALITY IMAGE
 ### Input
 ![image](https://github.com/user-attachments/assets/2d96f99d-8d20-434f-b256-1d932a196d75)
 ### Output
 <img width="862" alt="image" src="https://github.com/user-attachments/assets/fa0e9769-9436-47f1-ad03-fd5e8bea5f25" />
 
-# MULTI-LINUGAL
+## MULTI-LINUGAL
 ### Input
 ![image](https://github.com/user-attachments/assets/458749f9-ab29-432a-b04b-70c77d672302)
 ### Output
